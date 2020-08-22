@@ -1,0 +1,30 @@
+Buglog 
+
+Checkpoint 1
+
+#1 - Program restarts over and over again - the gdt was not loaded correctly
+#2 - Keyboard input not being displayed correctly - attempted to read the key from the wrong port
+#3 - Segfault - not specifying the global variable in x86_desc, the gdt descriptor pointer.
+#4 - Keyboard inputs characters with spaces - Was told it would be fine for now
+
+Checkpoint 2
+BUG #1 -- terminal issue
+ISSUE:  
+	Not being able to write the tests for the terminal read function. Always jumps to assert failure because I cannot type in to create a buffer that will be copied to the terminal buffer to be later displayed on the terminal screen.
+SOLUN:
+	I figured that it is an issue with critical section. Since terminal read uses a function that is also used to handle keyboard inputs. I have addded a critical section that prevents interrupts during the printing process, the putc function. Therefore, for the tests to work I need to take out the critical section, but I believe that the read function where it is copying buffer do need to be contained in a critical section.
+
+BUG #2 -- keyboard handling issue
+ISSUE:  
+	When handling keyboard inputs, printing out the buffer results in a infinite loop, keeps spamming the screen. The buffer reprints each time but not at the right location, so the screen is spammed. Also, the characters when pressed, it is being printed twice, the same character. 
+SOLUN:
+	The buffer is resulting in an infinite loop because my own putc function was using a while loop that couldn't	be stopped by comparing with buf_idx, because there is no upper limit on the index. The characters can't be added to the buffer, but the buf_idx always increases. Therefore I tried to change how the printing is done and just integrated/modified the original putc function for the tasks. The character printing twice is resulted from interrupt once when key pressed, another time when key is released.
+
+BUG #3 -- keyboard handling issue
+ISSUE:  
+	Alt and control are not handled correctly after holding down the alt and control still allows typing, where as alt should only be able to backspace and control should only be able to take in backspace and return. Also, enter was not done correctly because after the clear screen, we can no longer press enter anymore.
+SOLUN:
+	Added additional condition to take into account that alt and control only takes in a few specific keys. Added the cases into the keyboard handling function, returns if it is not the few special keys that has been pressed. The enter was fixed because we trolled ourselves. We were debugging, and want to know that enter key was taken in as enter. Therefore our print statements has a \n and we thought we did take the enter case and is giving us new lines. Thus, we took out the print statement and then we handled by using putc('\n').
+		
+#4 - buffer contains gibberish after fread - offset and buffer length not right
+#5 - buffer does not display correctly after dir_read - length not right -> FILENAME_SIZE

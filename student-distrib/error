@@ -1,0 +1,2 @@
+rm -f bootimg
+gcc -nostdlib -static boot.o interr.o x86_desc.o filesys.o i8259.o idt.o kernel.o keyboard.o lib.o paging.o rtc.o syscalls.o terminal.o tests.o -Ttext=0x400000 -o bootimg
